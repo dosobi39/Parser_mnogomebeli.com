@@ -6,7 +6,9 @@
 import scrapy
 
 
-class MmParserItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class Product(scrapy.Item):
+    product_url = scrapy.Field()
+    title = scrapy.Field()
+    description = scrapy.Field()
+    advantages = scrapy.Field()
+    specifications = scrapy.Field()

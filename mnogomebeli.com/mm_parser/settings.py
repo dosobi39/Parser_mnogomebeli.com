@@ -13,11 +13,18 @@ SPIDER_MODULES = ['mm_parser.spiders']
 NEWSPIDER_MODULE = 'mm_parser.spiders'
 
 
+# FEED_EXPORT_ENCODING = 'utf-8'
+# FEED_EXPORT_FIELDS = ['title', 'product_url', 'description', 'specifications', 'advantages']
+#
+# FEED_FORMAT = 'csv'
+# FEED_URI = 'out.csv'
+
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'mm_parser (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
+# ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
