@@ -14,7 +14,9 @@ class ProddataparsSpider(CrawlSpider):
     allowed_domains = ['mnogomebeli.com']
     start_urls = ['https://mnogomebeli.com/divany/']
 
-    rules = (Rule(LinkExtractor(allow=('/divany/',), deny=('personal', 'reviews', 'about', 'filter',)), callback='parse', follow=True),)
+    rules = (Rule(LinkExtractor(allow=('/divany/', '/krovati/', '/matrasy/', '/stenki/', '/shkafy/', '/kuhny/',
+                                       '/stoly/', '/stulya/', '/kresla/', '/tumby/', '/pufy/', '/komody/',),
+                                deny=('personal', 'reviews', 'about', 'filter',)), callback='parse', follow=True),)
 
     with open("out2.csv", "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
