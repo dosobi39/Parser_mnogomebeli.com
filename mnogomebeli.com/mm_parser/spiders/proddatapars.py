@@ -3,16 +3,16 @@ import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from scrapy.item import Item, Field
-from mm_parser.items import Product
+# from mm_parser.items import Product
 
-urls = input('Введите ссылку на каталог товаров --> ')
+# urls = input('Введите ссылку на каталог товаров --> ')
 
 
 class ProddataparsSpider(CrawlSpider):
 
     name = 'proddatapars'
     allowed_domains = ['mnogomebeli.com']
-    start_urls = [urls]
+    start_urls = ['https://mnogomebeli.com/divany/']
 
     rules = (Rule(LinkExtractor(allow=('/divany/',), deny=('personal', 'reviews', 'about', 'filter',)), callback='parse', follow=True),)
 
@@ -23,9 +23,9 @@ class ProddataparsSpider(CrawlSpider):
             (
                 "НАЗВАНИЕ",
                 "ССЫЛКА ТОВАРА",
-                # "СТАРАЯ ЦЕНА",
-                # "ЦЕНА",
-                # "ССЫЛКА НА КАРТИНКИ",
+                "СТАРАЯ ЦЕНА",
+                "ЦЕНА",
+                # "ССЫЛКИ НА КАРТИНКИ",
                 "ОПИСАНИЕ",
                 "ОСОБЕННОСТИ",
                 "ПРЕИМУЩЕСТВА",
@@ -34,7 +34,7 @@ class ProddataparsSpider(CrawlSpider):
 
     def parse(self, response):
 
-        item = Product()
+        # item = Product()
         data = []
 
         # title = response.xpath('//h1[@class="item-header__title t-h1"]/text()').get()
@@ -59,7 +59,7 @@ class ProddataparsSpider(CrawlSpider):
         product_url = response.url
 
         # описание
-        descriptions = response.xpath('(//div[@class="item-info__desc"]//p)[1]/text()').get()
+        descriptions = str(response.xpath('((//div[@class="item-info__desc"])[1]//p)/text()').get())
 
         # название характеристики
         specifications_1 = response.xpath('(//div[@class="item-info__specs"]/ul)[1]/li/p[1]/text()').getall()
@@ -75,17 +75,29 @@ class ProddataparsSpider(CrawlSpider):
         specification = [': '.join(x) for x in zip(specifications_1, specifications_2)]
         specification = ', '.join(specification)
 
-
         # преимущества
         advantages = response.xpath('(//div[@class="item-info__lists"])[1]/ul/li/text()').getall()
         advantages = [x.strip() for x in advantages]
         advantage = ', '.join(advantages)
+
+        # старая цена
+        old_price = response.xpath('//p[@class="item-header__price product__price--old"]//span[1]/text()[2]').get()
+
+        # новая цена
+        new_price = response.xpath('//p[@class="item-header__price"]//span[1]/text()[2]').get()
+
+        # # собираем ссылки картинок товара
+        # img_urls = response.xpath('(//div[@class="swiper-wrapper"])[1]//img/@src').getall()
+        # img_url = urls + img_urls
 
         if title is not None:
             data.append(
                 {
                     "title": title,
                     "product_url": product_url,
+                    "old_price": old_price,
+                    "new_price": new_price,
+                    # "img_url": img_url,
                     "descriptions": descriptions,
                     "specification": specification,
                     "advantage": advantage,
@@ -99,12 +111,15 @@ class ProddataparsSpider(CrawlSpider):
                     (
                         title,
                         product_url,
+                        old_price,
+                        new_price,
+                        # img_url,
                         descriptions,
                         specification,
                         advantage,
                     )
                 )
 
-        yield item
+        # yield item
 
 # scrapy crawl proddatapars - run
