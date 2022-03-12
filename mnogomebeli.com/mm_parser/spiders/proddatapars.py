@@ -12,10 +12,12 @@ class ProddataparsSpider(CrawlSpider):
 
     name = 'proddatapars'
     allowed_domains = ['mnogomebeli.com']
-    start_urls = ['https://mnogomebeli.com/divany/']
+    start_urls = ['https://mnogomebeli.com/']
 
-    rules = (Rule(LinkExtractor(allow=('/divany/', '/krovati/', '/matrasy/', '/stenki/', '/shkafy/', '/kuhny/',
-                                       '/stoly/', '/stulya/', '/kresla/', '/tumby/', '/pufy/', '/komody/',),
+    # '/krovati/', '/matrasy/', '/stenki/', '/shkafy/', '/kuhny/',
+    # '/stoly/', '/stulya/', '/kresla/', '/tumby/', '/pufy/', '/komody/',
+
+    rules = (Rule(LinkExtractor(allow=('/divany/',),
                                 deny=('personal', 'reviews', 'about', 'filter',)), callback='parse', follow=True),)
 
     with open("out2.csv", "w", newline="", encoding="utf-8") as file:
@@ -27,9 +29,10 @@ class ProddataparsSpider(CrawlSpider):
                 "ССЫЛКА ТОВАРА",
                 "СТАРАЯ ЦЕНА",
                 "ЦЕНА",
+                # "СКИДКА",
                 # "ССЫЛКИ НА КАРТИНКИ",
                 "ОПИСАНИЕ",
-                "ОСОБЕННОСТИ",
+                "ХАРАКТЕРИСТИКИ",
                 "ПРЕИМУЩЕСТВА",
             )
         )
@@ -88,9 +91,9 @@ class ProddataparsSpider(CrawlSpider):
         # новая цена
         new_price = response.xpath('//p[@class="item-header__price"]//span[1]/text()[2]').get()
 
-        # # собираем ссылки картинок товара
-        # img_urls = response.xpath('(//div[@class="swiper-wrapper"])[1]//img/@src').getall()
-        # img_url = urls + img_urls
+        # собираем ссылки картинок товара
+        # img_url = 'https://mnogomebeli.com/' + response.xpath('(//div[@class="swiper-wrapper"])[1]//div[@class="item-slider__img"]/a/@href').getall()
+        # img_urls = 'https://mnogomebeli.com/' +
 
         if title is not None:
             data.append(
@@ -99,7 +102,8 @@ class ProddataparsSpider(CrawlSpider):
                     "product_url": product_url,
                     "old_price": old_price,
                     "new_price": new_price,
-                    # "img_url": img_url,
+                    # "discount": discount,
+                    # "img_urls": img_urls,
                     "descriptions": descriptions,
                     "specification": specification,
                     "advantage": advantage,
@@ -115,7 +119,8 @@ class ProddataparsSpider(CrawlSpider):
                         product_url,
                         old_price,
                         new_price,
-                        # img_url,
+                        # discount,
+                        # img_urls,
                         descriptions,
                         specification,
                         advantage,
