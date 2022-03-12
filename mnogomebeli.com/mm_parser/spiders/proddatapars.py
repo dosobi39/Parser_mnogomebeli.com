@@ -3,61 +3,46 @@ import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from scrapy.item import Item, Field
-# from mm_parser.items import Product
-
-# urls = input('Введите ссылку на каталог товаров --> ')
 
 
 class ProddataparsSpider(CrawlSpider):
 
     name = 'proddatapars'
     allowed_domains = ['mnogomebeli.com']
-    start_urls = ['https://mnogomebeli.com/']
+    start_urls = ['https://mnogomebeli.com/divany/', 'https://mnogomebeli.com/tumby/',
+                  'https://mnogomebeli.com/krovati/', 'https://mnogomebeli.com/pufy/',
+                  'https://mnogomebeli.com/matrasy/', 'https://mnogomebeli.com/komody/',
+                  'https://mnogomebeli.com/stenki/', 'https://mnogomebeli.com/stulya/',
+                  'https://mnogomebeli.com/shkafy/', 'https://mnogomebeli.com/stellagi/',
+                  'https://mnogomebeli.com/stoly/', 'https://mnogomebeli.com/kresla/',
+                  ]
 
-    # '/krovati/', '/matrasy/', '/stenki/', '/shkafy/', '/kuhny/',
-    # '/stoly/', '/stulya/', '/kresla/', '/tumby/', '/pufy/', '/komody/',
+    rules = (Rule(LinkExtractor(allow=('/divany/', '/krovati/', '/matrasy/', '/stenki/', '/shkafy/', '/stoly/',
+                                       '/tumby/', '/pufy/', '/komody/', '/stulya/', '/stellagi/', '/kresla/',),
+                                deny=('personal', 'reviews', 'about', 'filter', '/action/',)),
+                  callback='parse', follow=True),)
 
-    rules = (Rule(LinkExtractor(allow=('/divany/',),
-                                deny=('personal', 'reviews', 'about', 'filter',)), callback='parse', follow=True),)
-
-    with open("out2.csv", "w", newline="", encoding="utf-8") as file:
+    with open("D:/Python_Project/M-M/mnogomebeli_parse_out.csv", "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
 
         writer.writerow(
             (
-                "НАЗВАНИЕ",
-                "ССЫЛКА ТОВАРА",
-                "СТАРАЯ ЦЕНА",
-                "ЦЕНА",
-                # "СКИДКА",
-                # "ССЫЛКИ НА КАРТИНКИ",
-                "ОПИСАНИЕ",
-                "ХАРАКТЕРИСТИКИ",
-                "ПРЕИМУЩЕСТВА",
+                "Название",
+                "Ссылка товара",
+                "Старая цена",
+                "Цена",
+                "Скидка",
+                "Ссылки на картинки",
+                "Ссылки Доп Фото",
+                "Описание",
+                "Характеристики",
+                "Преимущества",
             )
         )
 
     def parse(self, response):
 
-        # item = Product()
         data = []
-
-        # title = response.xpath('//h1[@class="item-header__title t-h1"]/text()').get()
-        # if title is not None:
-        #     item['product_url'] = response.url
-        #     item['title'] = title
-        #     item['description'] = response.xpath('(//div[@class="item-info__desc"]//p)[1]/text()').get()
-        #
-        #     specifications = response.xpath('(//div[@class="item-info__specs"]/ul)[1]/li/p/text()').getall()
-        #     item['specifications'] = [x.replace(" ", "") for x in specifications]
-        #     # item['specifications'] = specifications
-        #
-        #     advantages = response.xpath('(//div[@class="item-info__lists"])[1]/ul/li/text()').getall()
-        #     item['advantages'] = [x.replace(" ", "") for x in advantages]
-        #     # item['advantages'] = advantages
-        #
-        #     # item['peculiarities'] = response.xpath("").get()
-        #     # нужно получить картинки
 
         # название
         title = response.xpath('//h1[@class="item-header__title t-h1"]/text()').get()
@@ -74,7 +59,6 @@ class ProddataparsSpider(CrawlSpider):
         # значение характеристики
         specifications_2 = response.xpath('(//div[@class="item-info__specs"]/ul)[1]/li/p[2]/text()').getall()
         specifications_2 = [x.strip() for x in specifications_2]
-        # specification_2 = ['\n'.join(specifications_2)]
 
         # обЪединение названия и значения характеристик "Название: значение"
         specification = [': '.join(x) for x in zip(specifications_1, specifications_2)]
@@ -91,9 +75,30 @@ class ProddataparsSpider(CrawlSpider):
         # новая цена
         new_price = response.xpath('//p[@class="item-header__price"]//span[1]/text()[2]').get()
 
+        # размер скидки
+        discount = response.xpath('(//div[@class="item-header__prices"]//p[@class="item-header__price product__price--sale"]//span)/text()').get()
+
         # собираем ссылки картинок товара
-        # img_url = 'https://mnogomebeli.com/' + response.xpath('(//div[@class="swiper-wrapper"])[1]//div[@class="item-slider__img"]/a/@href').getall()
-        # img_urls = 'https://mnogomebeli.com/' +
+        img_url = response.xpath('(//div[@class="swiper-wrapper"])[1]//div[@class="item-slider__img"]/a/@href').getall()
+        img_url = ['https://mnogomebeli.com' + x for x in img_url]
+        img_urls = ', '.join(img_url)
+
+        # собираем ссылки фотографий чертежей
+        drawing = response.xpath('//div[@class="item-info__col"]//img/@src').getall()
+        drawing = ['https://mnogomebeli.com' + draw.split('?')[0] for draw in drawing]
+
+        # собираем ссылки на доп фото
+        other_photo = response.xpath('(//div[@class="swiper-wrapper"])[3]//img[@class="img__i"]/@src').getall()
+        other_photo = ['https://mnogomebeli.com' + o_p.split('?')[0] for o_p in other_photo]
+
+        # проверяем список на одинаковые ссылки
+        for url_o_p in drawing:
+            if url_o_p not in other_photo:
+                # объединаяем ссылки чертежей и доп. фото в один список
+                other_photo.append(url_o_p)
+
+        other_photo = list(dict.fromkeys(other_photo))
+        other_photos = ', '.join(other_photo)
 
         if title is not None:
             data.append(
@@ -102,15 +107,16 @@ class ProddataparsSpider(CrawlSpider):
                     "product_url": product_url,
                     "old_price": old_price,
                     "new_price": new_price,
-                    # "discount": discount,
-                    # "img_urls": img_urls,
+                    "discount": discount,
+                    "img_urls": img_urls,
+                    "other_photos": other_photos,
                     "descriptions": descriptions,
                     "specification": specification,
                     "advantage": advantage,
                 }
             )
 
-            with open(f"out2.csv", "a", newline="", encoding="utf-8") as file:
+            with open("D:/Python_Project/M-M/mnogomebeli_parse_out.csv", "a", newline="", encoding="utf-8") as file:
                 writer = csv.writer(file)
 
                 writer.writerow(
@@ -119,14 +125,16 @@ class ProddataparsSpider(CrawlSpider):
                         product_url,
                         old_price,
                         new_price,
-                        # discount,
-                        # img_urls,
+                        discount,
+                        img_urls,
+                        other_photos,
                         descriptions,
                         specification,
                         advantage,
                     )
                 )
 
-        # yield item
-
-# scrapy crawl proddatapars - run
+    # def close(self, reason):
+    #     start_time = self.crawler.stats.get_value('start_time')
+    #     finish_time = self.crawler.stats.get_value('finish_time')
+    #     print('[*INFO*] Общее время выполнения: ', finish_time - start_time)
