@@ -3,10 +3,10 @@
 #
 
 [![N|Solid](https://scrapy.org/img/scrapylogo.png)](https://scrapy.org/)
-_scrapy версии 2.6.1+_
+## Scrapy версии 2.6.1+
 #
 #
 [![N|Solid](https://www.python.org/static/img/python-logo.png)](https://www.python.org/)
-_python версии 3.10+ (тестировался только на 3.10)_
+## Python версии 3.10+ _(тестировался только на 3.10)_
 #
 #
